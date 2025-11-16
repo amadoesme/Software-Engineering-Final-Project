@@ -1,0 +1,27 @@
+/* Styles specific to the Display Books page */
+
+/* Star rating styles */
+.stars { display: inline-block; }
+.stars .star { text-decoration: none; color: #ccc; font-size: 1.25rem; padding: 0 6px; background:none;border:none;padding:0;cursor:pointer; }
+.stars .star:hover,
+.stars .star:focus,
+.stars .star:active { color: #f5b301; outline: none; }
+
+/* Make the star buttons inherit font and remove default button styles */
+.stars form { display: inline; }
+
+.cannot-rate { font-size:0.9rem; margin-top:4px; color:#666; }
+
+.rating-summary { font-size:0.9rem; margin-top:4px; }
+
+/* Table improvements for displaybooks */
+table { width: 100%; border-collapse: collapse; background: #fff; }
+table th, table td { padding: 10px; border: 1px solid #ddd; text-align: left; }
+
+table tr:nth-child(even) { background: #fafafa; }
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .stars .star { font-size: 1rem; padding: 0 4px; }
+  table th, table td { padding: 8px; }
+}

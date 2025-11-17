@@ -1,0 +1,22 @@
+<!-- FILE: templates/book_confirm_delete.html -->
+{% extends "base.html" %}
+{% load static %}
+
+{% block sidenav %}
+  {% if item_list %}
+    {% for item in item_list %}
+      <li><a href="{{ item.link }}">{{ item.item }}</a></li>
+    {% endfor %}
+  {% endif %}
+{% endblock sidenav %}
+
+{% block content %}
+  <h1>Confirm Delete</h1>
+  <p>Are you sure you want to delete <strong>{{ book.title }}</strong> by {{ book.author }}?</p>
+
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit">Yes, delete</button>
+    <a href="{% url 'home' %}">Cancel</a>
+  </form>
+{% endblock content %}

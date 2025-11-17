@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block sidenav %}
+  <li><a href="{% url 'home' %}">Home</a></li>
+  <li><a href="{% url 'search' %}">Search</a></li>
+{% endblock sidenav %}
+
+{% block content %}
+  <h1>Your Cart</h1>
+
+  {% if items %}
+    <table border="1" cellpadding="6">
+      <tr>
+        <th>Title</th><th>Author</th><th>Qty</th><th>Actions</th>
+      </tr>
+      {% for item in items %}
+        <tr>
+          <td><a href="{% url 'book-detail' item.book.pk %}">{{ item.book.title }}</a></td>
+          <td>{{ item.book.author }}</td>
+          <td>{{ item.qty }}</td>
+          <td>
+            <form action="{% url 'cart-add' item.book.pk %}" method="post" style="display:inline;">
+              {% csrf_token %}
+              <button type="submit">+</button>
+            </form>
+            <form action="{% url 'cart-remove' item.book.pk %}" method="post" style="display:inline;">
+              {% csrf_token %}
+              <button type="submit">−</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+    </table>
+
+    <p><strong>Total items:</strong> {{ total_items }}</p>
+
+    <p>
+      <a href="{% url 'cart-clear' %}">Clear Cart</a>
+    </p>
+  {% else %}
+    <p>Your cart is empty.</p>
+  {% endif %}
+{% endblock content %}

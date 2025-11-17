@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<h2>Send Us a Message</h2>
+
+<!-- This form lets users send feedback to the site -->
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}  <!-- Renders the message form fields -->
+  <button type="submit">Send</button>
+</form>
+
+</body>
+</html>

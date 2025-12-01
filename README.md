@@ -67,7 +67,5 @@ Built collaboratively as the Final Project for CS3337 – Software Engineering.
 - HTML5
 - CSS3
 - SQLite3
-
-PyCharm
-
-Git & GitHub
+- PyCharm
+- Git & GitHub

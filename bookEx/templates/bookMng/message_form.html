@@ -1,18 +1,29 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-<h2>Send Us a Message</h2>
+{% extends "base.html" %}
 
-<!-- This form lets users send feedback to the site -->
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}  <!-- Renders the message form fields -->
-  <button type="submit">Send</button>
-</form>
+{% block title %}Contact Us{% endblock %}
 
-</body>
-</html>
+{% block content %}
+<h1 class="page-title">Contact Group 1</h1>
+<p class="page-subtitle">
+    Send us any questions or feedback about the Book Library application.
+</p>
+
+<div class="form-card">
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label class="form-label">Name</label>
+            {{ form.name }}
+        </div>
+        <div class="form-group">
+            <label class="form-label">Email</label>
+            {{ form.email }}
+        </div>
+        <div class="form-group">
+            <label class="form-label">Message</label>
+            {{ form.message }}
+        </div>
+        <button type="submit" class="btn-primary">Send message</button>
+    </form>
+</div>
+{% endblock %}

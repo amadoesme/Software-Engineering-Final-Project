@@ -1,33 +1,55 @@
-<!-- FILE: templates/base.html -->
-<!doctype html>
+{% load static %}
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>{% block title %}BookEx{% endblock title %}</title>
-  <link rel="stylesheet" href="{% load static %}{% static 'styles.css' %}">
-  <style>
-    body { font-family: system-ui, sans-serif; margin: 0; }
-    header { background: #222; color: #fff; padding: 12px 16px; }
-    .wrap { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
-    nav { background: #f5f5f5; padding: 12px 16px; }
-    main { padding: 16px 24px; }
-    ul { padding-left: 18px; }
-    a { color: #0366d6; text-decoration: none; }
-  </style>
+    <meta charset="UTF-8">
+    <title>{% block title %}Book Library{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="{% static 'base.css' %}">
+    {% block extra_head %}{% endblock %}
 </head>
 <body>
-  <header><strong>BookEx</strong></header>
-  <div class="wrap">
-    <nav>
-      <ul>
-        {% block sidenav %}
-          <!-- Default empty sidenav (your templates can override this) -->
-        {% endblock sidenav %}
-      </ul>
+<header class="navbar">
+    <div class="nav-brand">
+        <a href="{% url 'home_page' %}">Book Library</a>
+    </div>
+
+    <nav class="nav-links">
+        <a href="{% url 'displaybooks' %}">Browse</a>
+        <a href="{% url 'search' %}">Search</a>
+        <a href="{% url 'cart' %}">Cart</a>
+        <a href="{% url 'message_form' %}">Contact</a>
+        <a href="{% url 'about' %}">About</a>
+
+        {% if user.is_authenticated %}
+            <a href="{% url 'favorites' %}">Favorites</a>
+            <a href="{% url 'mybooks' %}">My Books</a>
+
+            <form class="nav-inline-form" method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn-link">Logout</button>
+            </form>
+        {% else %}
+            <a href="{% url 'login' %}">Login</a>
+            <a href="{% url 'register' %}">Register</a>
+        {% endif %}
     </nav>
-    <main>
-      {% block content %}{% endblock content %}
-    </main>
-  </div>
+
+    <!-- Optional search bar in the navbar -->
+    <form class="nav-search" method="get" action="{% url 'search' %}">
+        <input type="text" name="q" placeholder="Search books..." />
+    </form>
+</header>
+
+<main class="page-container">
+    <div class="page-inner">
+        {% block content %}{% endblock %}
+    </div>
+</main>
+
+<footer class="site-footer">
+    <p>&copy; {% now "Y" %} Group 1 – CS3337 Book Library</p>
+</footer>
 </body>
 </html>

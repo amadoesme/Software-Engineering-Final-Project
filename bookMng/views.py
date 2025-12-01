@@ -1,12 +1,15 @@
+from django.db import models
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponseRedirect
 from django.urls import reverse, reverse_lazy
 from django.views.generic.edit import CreateView
 from django.contrib.auth.forms import UserCreationForm
 from django.views.decorators.http import require_POST
+from django.contrib.auth.decorators import login_required
 
+from .models import Book, Favorite
 from .forms import BookForm, ReviewForm, SearchForm
-from .models import Book
+
 
 # ---------- BASIC LIST/HOME ----------
 def index(request):
@@ -29,7 +32,11 @@ def postbook(request):
             return HttpResponseRedirect(f"{reverse('postbook')}?submitted=True")
     else:
         form = BookForm()
-    return render(request, "postbook.html", {"form": form, "submitted": submitted, "item_list": []})
+    return render(
+        request,
+        "postbook.html",
+        {"form": form, "submitted": submitted, "item_list": []},
+    )
 
 
 # ---------- BOOK DETAIL + COMMENTS (REVIEWS) ----------
@@ -48,8 +55,26 @@ def book_detail(request, pk):
     else:
         form = ReviewForm()
 
-    return render(request, "book_detail.html",
-                  {"book": book, "reviews": reviews, "avg": avg, "form": form, "item_list": []})
+    is_favorite = False
+    if request.user.is_authenticated:
+        is_favorite = Favorite.objects.filter(
+            user=request.user,
+            book=book
+        ).exists()
+
+    return render(
+        request,
+        "book_detail.html",
+        {
+            "book": book,
+            "reviews": reviews,
+            "avg": avg,
+            "form": form,
+            "is_favorite": is_favorite,
+            "item_list": [],
+        },
+    )
+
 
 
 # ---------- SIMPLE SEARCH ----------
@@ -57,28 +82,36 @@ def search(request):
     form = SearchForm(request.GET or None)
     books = []
     query = ""
+
     if form.is_valid():
         query = form.cleaned_data.get("q", "").strip()
         if query:
-            books = Book.objects.filter(
-                models.Q(title__icontains=query) |
-                models.Q(author__icontains=query) |
-                models.Q(isbn__icontains=query)
-            ).order_by("title")
-    return render(request, "search.html", {
-        "form": form, "query": query, "books": books, "item_list": []
-    })
+            books = (
+                Book.objects.filter(
+                    models.Q(title__icontains=query)
+                    | models.Q(author__icontains=query)
+                    | models.Q(isbn__icontains=query)
+                )
+                .order_by("title")
+            )
+
+    return render(
+        request,
+        "search.html",
+        {"form": form, "query": query, "books": books, "item_list": []},
+    )
 
 
 # ---------- SHOPPING CART (SESSION-BASED) ----------
 def _get_cart(session):
-    cart = session.get("cart", {})
     # cart format: {"book_id": quantity}
-    return cart
+    return session.get("cart", {})
+
 
 def _save_cart(session, cart):
     session["cart"] = cart
     session.modified = True
+
 
 @require_POST
 def cart_add(request, pk):
@@ -88,6 +121,7 @@ def cart_add(request, pk):
     cart[key] = cart.get(key, 0) + 1
     _save_cart(request.session, cart)
     return redirect("cart-view")
+
 
 @require_POST
 def cart_remove(request, pk):
@@ -100,9 +134,11 @@ def cart_remove(request, pk):
         _save_cart(request.session, cart)
     return redirect("cart-view")
 
+
 def cart_clear(request):
     _save_cart(request.session, {})
     return redirect("cart-view")
+
 
 def cart_view(request):
     cart = _get_cart(request.session)
@@ -114,21 +150,56 @@ def cart_view(request):
         qty = cart.get(str(b.id), 0)
         total_items += qty
         items.append({"book": b, "qty": qty})
-    return render(request, "cart.html", {
-        "items": items, "total_items": total_items, "item_list": []
-    })
+    return render(
+        request,
+        "cart.html",
+        {"items": items, "total_items": total_items, "item_list": []},
+    )
 
 
-# ---------- REGISTRATION (unchanged) ----------
+# ---------- FAVORITES ----------
+@login_required
+def toggle_favorite(request, book_id):
+    book = get_object_or_404(Book, id=book_id)
+
+    favorite, created = Favorite.objects.get_or_create(
+        user=request.user,
+        book=book,
+    )
+
+    if not created:
+        favorite.delete()
+
+    next_url = request.POST.get("next") or request.GET.get("next")
+    if next_url:
+        return redirect(next_url)
+
+    return redirect("book_detail", pk=book.id)
+
+
+@login_required
+def favorites_list(request):
+    favorites = (
+        Favorite.objects.filter(user=request.user)
+        .select_related("book")
+        .order_by("-created_at")
+    )
+    return render(
+        request,
+        "favorites.html",
+        {"favorites": favorites, "item_list": []},
+    )
+
+
+# ---------- REGISTRATION ----------
 class Register(CreateView):
     template_name = "register.html"
     form_class = UserCreationForm
     success_url = reverse_lazy("register-success")
+
     def form_valid(self, form):
         form.save()
         return HttpResponseRedirect(self.success_url)
 
-
-# Optional aliases if you referenced them before
 mybooks = displaybooks
 my_books = displaybooks
